@@ -1,0 +1,19 @@
+To get this to compile, simply type 'make'.
+
+One note of interest:
+  Just in case this shows up elsewhere, the manpages on my host at work (a
+	Sun 4.1a clone) say that O_NDELAY = FNDELAY.  So, I put this line in
+	my /usr/include/fcntl.h to get this to compile:
+
+#define FNDELAY		O_NDELAY
+
+  However, that's not the way that Linux comes, so if you're not to keen on
+	changing include files, I've ifdeffed around that part of the program, 
+	and now it works just fine.  (A little hard to see at 132x30 
+	granted...;)  I replaced the calls to FNDELAY with calls to O_NDELAY, 
+	so it's the same effect, just for this program alone...
+
+  Happy Linuxing!
+
+   -Ken
+
