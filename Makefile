@@ -1,19 +1,43 @@
 #makefile for BUGS I - SRN 7/12/91 
 # modified for Linux on 6/15/92 Ken Corey
 
-CC= gcc
-CFLAGS= -O3
-OBJS= main.o startup.o loop.o meat.o
+PROG = bugs
 
-#bugs : &  $(OBJS)
-bugs :  $(OBJS)   
-#use above line if parallel processing is not supported
-	${CC} ${CFLAGS} -o bugs $(OBJS) -lcurses -ltermcap 
+CC       ?= gcc
+CFLAGS   ?= -O3
+CFLAGS	 += -std=c99 -Wall -Wextra
+CFLAGS   += $(shell ncurses5-config --cflags)
+CPPFLAGS += -DLINUX
+CPPFLAGS += -D_POSIX_C_SOURCE=199309L
+CPPFLAGS += -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED
+LIBS     += $(shell ncurses5-config --libs)
 
-main.o: main.c info.h
-	${CC} ${CFLAGS} -DLINUX -o main.o main.c
+SRCS = $(wildcard *.c)
+OBJS = $(SRCS:.c=.o)
+DEPS = info.h
 
-$(OBJS):  info.h	
+INSTALL      = install
+INSTALL_BIN  = $(INSTALL) -D -m 755
 
+PREFIX    = /usr/local
+BIN_DIR   = $(PREFIX)/bin
+
+all: $(PROG)
+
+$(PROG): $(OBJS)
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+%.o: %.c $(DEPS)
+
+bugs.o: bugs.h
+
+install: all
+	$(INSTALL_BIN) $(PROG) $(BIN_DIR)/$(PROG)
+.PHONY: install
+
+uninstall:
+	$(RM)    $(BIN_DIR)/$(PROG)
+.PHONY: uninstall
 clean: 
-	rm -f *.o core temp.c a.out
+	$(RM) $(PROG) $(OBJS)
+.PHONY: clean
