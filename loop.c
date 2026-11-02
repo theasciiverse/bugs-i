@@ -3,6 +3,7 @@
 #include "bugs.h"
 #include "meat.h"
 #include "startup.h"
+#include "screen.h"
 #include <time.h>
 
 struct pos npos[] = {
@@ -12,14 +13,13 @@ struct pos npos[] = {
 
 void change(int);
 
-void loop(void)
+/* Plays one level. Returns LEVEL_DONE when every bug is gone, GAME_OVER
+   when a new piece has no room, QUIT when the player leaves (q or Esc). */
+int loop(void)
 {
+    int r;
     piece = 0;                  /* haven't played yet */
-    mvprintw(1, 0, "Score: %d", score); /*update stats */
-    mvprintw(3, 0, "Level: %d", lv);
-    mvprintw(5, 0, "Bugs left: %02d", v);
-    mvprintw(7, 0, "Speed: %d", sp);
-    refresh();
+    stats();                    /*update stats */
     while (v != 0)
     {                           /*till no bugs left */
         cp = 0;
@@ -30,12 +30,13 @@ void loop(void)
 
         mvwaddch(w, p1->y, p1->x, p1->c);
         mvwaddch(w, p2->y, p2->x, p2->c);
-        wrefresh(w);
+        board_show();
         if (letter(1, 5) != BLANK || letter(1, 4) != BLANK)
             /*can't move down, tough luck */
-            fatal("Game Over");
+            return GAME_OVER;
 
-        loop2();                /*loop here till piece is place */
+        if ((r = loop2()) != 0) /*loop here till piece is place */
+            return r;
         meat();                 /*checks for removal and removes pieces if necessary
                                    (garbage man) */
         piece++;                /*used a piece */
@@ -48,29 +49,71 @@ void loop(void)
                 sco = sco * 2;
             score += sco * 100;
             sc = 0;             /*score =  n(sc+1)=n(sc)*200; */
+            stats();
+        }
+    }
+    return LEVEL_DONE;
+}
 
-            mvprintw(1, 0, "Score: %d", score);
-            mvprintw(5, 0, "Bugs left: %02d", v);
+/* The pause between steps when no key is waiting; a piece drops one row
+   after five of them. */
+static long step_ns(void)
+{
+    return 250000000L - sp * 50000000L;
+}
+
+static int pause_game(void)     /* 1 to leave the game */
+{
+    int ch;
+    mvprintw(oy + FRAME_H - 3, ox, "BUGS I");
+    mvprintw(oy + FRAME_H - 2, ox, "1.3");
+    mvprintw(oy + 9, ox, "Paused: p to go on");
+    refresh();
+    nodelay(stdscr, FALSE);
+    while ((ch = key()) != 'p')
+    {
+        if (ch == 'q' || ch == 27)
+            break;
+        if (ch == ERR)          /* a resize redrew the screen */
+        {
+            mvprintw(oy + FRAME_H - 3, ox, "BUGS I");
+            mvprintw(oy + FRAME_H - 2, ox, "1.3");
+            mvprintw(oy + 9, ox, "Paused: p to go on");
             refresh();
         }
     }
+    nodelay(stdscr, TRUE);
+    mvprintw(oy + FRAME_H - 3, ox, "      ");
+    mvprintw(oy + FRAME_H - 2, ox, "   ");
+    mvprintw(oy + 9, ox, "                  ");
+    refresh();
+    return ch != 'p';
 }
 
-void loop2(void)
+/* Moves the piece in play until it lands. 0 when it has, QUIT when the
+   player leaves. Keys: arrows or h, j, l to move; Up, x or s to turn
+   clockwise, z or a the other way; space to drop; p to pause; q or Esc
+   to leave the game. */
+int loop2(void)
 {
     int i, dflg = 0;
     short tme = 0;              /*time counter */
     struct timespec t = { .tv_sec = 0, .tv_nsec = 0 };
 
-    while ((i = wgetch(w)) != 'q' && !dflg)
+    while (!dflg)
     {
+        i = key();
+        if (i == 'q' || i == 27)
+            return QUIT;
         switch (i)
         {
         case 'h':
+        case KEY_LEFT:
             mvcheck(0, -1);
             break;
 
         case 'l':
+        case KEY_RIGHT:
             mvcheck(0, 1);
             break;
 
@@ -80,56 +123,50 @@ void loop2(void)
             break;
 
         case 'j':
+        case KEY_DOWN:
             dflg = mvcheck(1, 0);       /*if dflag is set we hit something */
             tme = 0;            /*reset timer */
             break;
 
         case 'a':              /*rotate counter-clockwise */
+        case 'z':
             change(-1);
             break;
 
         case 's':              /*rotate clockwise */
+        case 'x':
+        case KEY_UP:
             change(1);
             break;
 
         case ' ':
             while (mvcheck(1, 0) != -1)
-                wrefresh(w);
+                board_show();
             dflg = 1;
             break;
 
         case 'p':
-            mvprintw(LINES - 3, COLS - 7, "BUGS I");
-            mvprintw(LINES - 2, COLS - 6, "1.3");
-            refresh();
-            bleed(0, 0);
-            while (getch() != 'p');
-            bleed(0, 1);
-            deleteln();
-            move(LINES - 3, 0);
-            deleteln();
-            deleteln();
-            refresh();
+            if (pause_game())
+                return QUIT;
             break;
         default:
-            t.tv_nsec = 250000000L - sp * 50000000L;
+            t.tv_nsec = step_ns();
             nanosleep(&t, NULL);
             break;
         }
-        if (i != EOF)           /*EOF is generated if no input */
-            wrefresh(w);
+        if (i != ERR)           /*ERR is generated if no input */
+            board_show();
 
         tme++;                  /*increase timer */
         if (tme > 4)            /*No input for awhile? */
-            dflg = mvcheck(1, 0), tme = 0, wrefresh(w);
+            dflg = mvcheck(1, 0), tme = 0, board_show();
     }
     if (dflg && !(cp & 1))
     {                           /*if we're sideways set a[][] */
         a[p1->y][p1->x] = 1;
         a[p2->y][p2->x] = 2;
     }
-    if (i == 'q')
-        fatal("Quit");
+    return 0;
 }
 
 int mvcheck(int y1, int x1)     /*see if we can move or not */

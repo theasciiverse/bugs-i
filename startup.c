@@ -1,6 +1,7 @@
 #include "startup.h"
 #include "info.h"
 #include "bugs.h"
+#include "screen.h"
 
 chtype c[3];                      /* Game piece array */
 
@@ -13,9 +14,15 @@ void newstart(void)
     p2 = &p1[1];                /*pointers not really necessary here
                                    for that matter neither is array */
 
-    w = subwin(stdscr, 18, 10, 2, 32);  /*make gameboard */
+    /* A pad, not a window: ncurses shrinks windows that no longer fit when
+       the terminal gets smaller, and does not grow them back, so the board
+       (whose contents are the game) lost rows after a small resize. Pads
+       are left alone; board_show() puts it on the screen. */
+    if (w == NULL)
+        w = newpad(18, 10);     /*make gameboard */
     if (w == (WINDOW *) NULL)
         fatal("memory error");  /*trouble- no memory! */
+    nodelay(stdscr, TRUE);      /* the board never waits for a key */
 
     box(w, 124, 34);
 
@@ -30,8 +37,7 @@ void start(void)                    /*call this every new level */
     for (y = 1; y < 17; y++)    /*zap board and a[][] */
         for (x = 1; x < 9; x++)
             mvwaddch(w, y, x, BLANK), a[y][x] = 0;
-    wrefresh(w);
-    wstandout(w);               /*reverse all characters added till standend() */
+    board_show();
     for (i = 0; i < v; i++)
     {
         do
@@ -48,21 +54,19 @@ void start(void)                    /*call this every new level */
 
         }
         while (ch != BLANK);
-        mvwaddch(w, y, x, c[z]);        /*place on board */
+        mvwaddch(w, y, x, glyph(c[z], 1));      /*place on board, a bug */
         a[y][x] = 3;            /* show bug in a[][] */
-        wrefresh(w);
+        board_show();
     }
-    wstandend(w);
     nextpiece();                /*show next piece */
 }
 
 void nextpiece(void)
 {
     static chtype na, nb;       /*remember every time */
-    p1->c = c[na];              /*put old chars in play */
-    p2->c = c[nb];
+    p1->c = glyph(c[na], 0);    /*put old chars in play */
+    p2->c = glyph(c[nb], 0);
     na = rx(3, 0);              /* make new next piece & display it */
     nb = rx(3, 0);
-    mvprintw(1, 36, "%c%c", c[na], c[nb]);
-    refresh();
+    show_next(c[na], c[nb]);
 }

@@ -1,5 +1,6 @@
 #include "info.h"
 #include "meat.h"
+#include "screen.h"
 
 /* Cells to settle after a removal. One chain of removals can mark every
    cell of a row and two per column run, plus the halves left beside them,
@@ -60,7 +61,7 @@ int terminate(void)                 /*I'll be back! */
 {
     struct pos *tp = t;         /*tp points to t[0] */
     unsigned int i;
-    wrefresh(w);
+    board_show();
 
     if (v == 0)
         return ERR;             /*we've killed all the bugs! */
@@ -75,7 +76,7 @@ int terminate(void)                 /*I'll be back! */
                                            see if we can do it again */
 
     tcount = 0;                 /*no more in t[] */
-    wrefresh(w);
+    board_show();
     return 0;                   /*still got bugs left */
 }
 
@@ -114,7 +115,7 @@ void down(int y, int x)
         {
             mvwaddch(w, y, x, ad);      /*move piece down */
             mvwaddch(w, --y, x, BLANK);
-            wrefresh(w);
+            board_show();
         }
 }
 
