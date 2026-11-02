@@ -264,7 +264,11 @@ int main(void)
     noecho();
     cbreak();                   /*no return needed for input */
     keypad(stdscr, TRUE);
+#if defined(NCURSES_VERSION_MAJOR) && NCURSES_VERSION_MAJOR >= 6
     set_escdelay(25);           /* Esc answers at once */
+#else
+    ESCDELAY = 25;              /* ncurses 5 (macOS) has only the variable */
+#endif
     curs_set(0);
     colours();
     layout();
