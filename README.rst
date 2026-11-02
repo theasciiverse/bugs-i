@@ -1,3 +1,13 @@
+.. note::
+
+   **Play it with Asciiverse.** With `av <https://asciiverse.sh>`_, the
+   Asciiverse client::
+
+      av install bugs-i
+      av play bugs-i
+
+   What Asciiverse changed is in PATCHES.md. The 2015 README follows.
+
 ========================
 Dr. Mario clone (BUGS I)
 ========================
