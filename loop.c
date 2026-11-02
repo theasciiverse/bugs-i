@@ -31,7 +31,7 @@ void loop(void)
         mvwaddch(w, p1->y, p1->x, p1->c);
         mvwaddch(w, p2->y, p2->x, p2->c);
         wrefresh(w);
-        if (mvwinch(w, 1, 5) != BLANK || mvwinch(w, 1, 4) != BLANK)
+        if (letter(1, 5) != BLANK || letter(1, 4) != BLANK)
             /*can't move down, tough luck */
             fatal("Game Over");
 
@@ -138,9 +138,9 @@ int mvcheck(int y1, int x1)     /*see if we can move or not */
 
     /*we don't want to examine the other half of piece */
     if (p1->y + y1 != p2->y || p1->x + x1 != p2->x)
-        a = mvwinch(w, p1->y + y1, p1->x + x1);
+        a = letter(p1->y + y1, p1->x + x1);
     if (p2->y + y1 != p1->y || p2->x + x1 != p1->x)
-        b = mvwinch(w, p2->y + y1, p2->x + x1);
+        b = letter(p2->y + y1, p2->x + x1);
     if (a != BLANK || b != BLANK)
         return -1;              /*no good, if we're going down, we hit
                                    something */
@@ -175,12 +175,12 @@ void change(int dir)            /*rotate piece */
     if (p2->x == 8 && cp & 1)
     {                           /*if we're on the right wall vertically
                                    we need to backoff to turn & check somewhere else */
-        j = mvwinch(w, p1->y, 7);
+        j = letter(p1->y, 7);
         sideflag = 1;           /*set a flag */
         nx = 0;
     }
     else
-        j = mvwinch(w, p2->y + ny, p2->x + nx);
+        j = letter(p2->y + ny, p2->x + nx);
     /*not on wall check regularly */
 
     if (j != BLANK)

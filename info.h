@@ -2,6 +2,12 @@
 
 #define BLANK ' '
 
+/* The letter in a board cell, without its attributes. Bugs are drawn in
+   reverse video and pieces are not; 1991's BSD curses returned only the
+   letter from winch, ncurses returns the attributes too, so comparing
+   what mvwinch gives made a bug never match its own letter. */
+#define letter(y, x) (mvwinch(w, (y), (x)) & A_CHARTEXT)
+
 extern int a[17][9];            /* Array so side pieces & bugs can
                                    be found */
 

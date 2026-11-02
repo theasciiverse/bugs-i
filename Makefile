@@ -41,6 +41,14 @@ install: all
 uninstall:
 	$(RM)    $(BIN_DIR)/$(PROG)
 .PHONY: uninstall
+# tests/match: bugs cleared by pieces of their letter (dummy terminal)
+tests/match: tests/match.c meat.o state.o $(DEPS)
+	$(CC) -o $@ tests/match.c meat.o state.o $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(LIBS)
+
+test: tests/match
+	./tests/match < /dev/null
+.PHONY: test
+
 clean: 
-	$(RM) $(PROG) $(OBJS)
+	$(RM) $(PROG) $(OBJS) tests/match
 .PHONY: clean

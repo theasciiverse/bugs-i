@@ -53,7 +53,7 @@ int terminate(void)                 /*I'll be back! */
     /*walk through t[48] */
     for (i = 0; tcount > i; tp++, i++)
         while (tp->y < 18)      /*till we're at the bottom */
-            if (mvwinch(w, tp->y, tp->x) != BLANK)
+            if (letter(tp->y, tp->x) != BLANK)
                 break;          /*nothing there */
             else
                 down(tp->y++, tp->x);   /*pull down one if we can, then
@@ -71,10 +71,10 @@ void down(int y, int x)
 
     /*if current pos is blank and up is not & not  a bug & we're not at 
        the top,(whew!) we're ok */
-    while (mvwinch(w, y, x) == BLANK && (b = a[y - 1][x]) != 3 && y > 1 &&
-           (ad = mvwinch(w, y - 1, x)) != BLANK)
+    while (letter(y, x) == BLANK && (b = a[y - 1][x]) != 3 && y > 1 &&
+           ((ad = mvwinch(w, y - 1, x)) & A_CHARTEXT) != BLANK)
         if (b == 1)
-            if (mvwinch(w, y, x + 1) == BLANK)
+            if (letter(y, x + 1) == BLANK)
             {
                 a[y - 1][x] = a[y - 1][x + 1] = 0;
                 a[y][x] = 1;
@@ -86,7 +86,7 @@ void down(int y, int x)
             else
                 return;         /*forget it. side piece can't move down */
         else if (b == 2)
-            if (mvwinch(w, y, x - 1) == BLANK)
+            if (letter(y, x - 1) == BLANK)
             {
                 a[y - 1][x] = a[y - 1][x - 1] = 0;
                 a[y][x] = 2;
@@ -114,8 +114,8 @@ int row(int y)                  /*check rows */
         int counter = 0;
         do
         {
-            a1 = mvwinch(w, y, x++);
-            b1 = mvwinch(w, y, x);
+            a1 = letter(y, x++);
+            b1 = letter(y, x);
             counter++;
         }
         while (a1 == b1 && a1 != BLANK);        /*keep going till different */
@@ -162,8 +162,8 @@ int cols(int x)                 /*basically same as rows */
         int counter = 0;
         do
         {
-            a1 = mvwinch(w, y++, x);
-            b1 = mvwinch(w, y, x);
+            a1 = letter(y++, x);
+            b1 = letter(y, x);
             counter++;
         }
         while (a1 == b1 && a1 != BLANK);
@@ -195,14 +195,14 @@ void setac(int y, int x)
     if (lr == 1)
     {
         a[y][x + 1] = 0;
-        if (mvwinch(w, y + 1, x + 1) == BLANK)
+        if (letter(y + 1, x + 1) == BLANK)
             t[tcount].y = y + 1, t[tcount++].x = x + 1;
         /*set t[] here because terminate won't check the neighboring cols */
     }
     else if (lr == 2)
     {
         a[y][x - 1] = 0;
-        if (mvwinch(w, y + 1, x - 1) == BLANK)
+        if (letter(y + 1, x - 1) == BLANK)
             t[tcount].y = y + 1;
         t[tcount++].x = x - 1;
     }

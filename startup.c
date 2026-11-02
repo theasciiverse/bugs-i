@@ -39,11 +39,11 @@ void start(void)                    /*call this every new level */
             z = rx(3, 0);       /*which char? */
             x = rx(8, 1);
             y = rx(14, 4);
-            ch = mvwinch(w, y, x);
-            if (mvwinch(w, y + 3, x) == c[z]
-             || mvwinch(w, y - 3, x) == c[z]
-             || mvwinch(w, y, x + 3) == c[z]
-             || mvwinch(w, y, x - 3) == c[z])       /* can't have 4 in a row or col to start */
+            ch = letter(y, x);
+            if (letter(y + 3, x) == c[z]
+             || letter(y - 3, x) == c[z]
+             || letter(y, x + 3) == c[z]
+             || letter(y, x - 3) == c[z])       /* can't have 4 in a row or col to start */
                 ch = 0;
 
         }
