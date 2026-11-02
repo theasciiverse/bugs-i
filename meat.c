@@ -1,9 +1,24 @@
 #include "info.h"
 #include "meat.h"
 
-struct pos t[48];               /*terminate array - could have used
+/* Cells to settle after a removal. One chain of removals can mark every
+   cell of a row and two per column run, plus the halves left beside them,
+   so 48 could overflow; this holds every cell three times over, and
+   mark() never writes past it. */
+#define TMAX (17 * 9 * 3)
+struct pos t[TMAX];             /*terminate array - could have used
                                    linked lists, wouldn't be worth
                                    time spent in malloc each time */
+
+static void mark(int y, int x)
+{
+    if (tcount < TMAX)
+    {
+        t[tcount].y = y;
+        t[tcount].x = x;
+        tcount++;
+    }
+}
 
 void meat(void)                     /*checks and removes */
 {
@@ -127,8 +142,7 @@ int row(int y)                  /*check rows */
            if bugs increase sc */
         for (; counter > 0; counter--)
         {
-            t[tcount].y = y;
-            t[tcount++].x = x - counter;
+            mark(y, x - counter);
             mvwaddch(w, y, x - counter, BLANK);
             if (a[y][x - counter] == 3)
                 sc++, v--;
@@ -170,10 +184,8 @@ int cols(int x)                 /*basically same as rows */
         if (counter < 4)
             continue;
 
-        t[tcount].y = y - counter;      /*we don't have to check */
-        t[tcount++].x = x;      /*every piece removed */
-        t[tcount].y = y;        /*when we killed it */
-        t[tcount++].x = x;      /*vertically */
+        mark(y - counter, x);   /*we don't have to check */
+        mark(y, x);             /*every piece removed when we killed it vertically */
 
         for (; counter > 0; counter--)
         {
@@ -196,14 +208,13 @@ void setac(int y, int x)
     {
         a[y][x + 1] = 0;
         if (letter(y + 1, x + 1) == BLANK)
-            t[tcount].y = y + 1, t[tcount++].x = x + 1;
+            mark(y + 1, x + 1);
         /*set t[] here because terminate won't check the neighboring cols */
     }
     else if (lr == 2)
     {
         a[y][x - 1] = 0;
         if (letter(y + 1, x - 1) == BLANK)
-            t[tcount].y = y + 1;
-        t[tcount++].x = x - 1;
+            mark(y + 1, x - 1);
     }
 }
