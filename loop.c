@@ -56,10 +56,14 @@ int loop(void)
 }
 
 /* The pause between steps when no key is waiting; a piece drops one row
-   after five of them. */
+   after five of them. "play speed will increase every 10 pieces", says
+   the 1992 README, which the code never did: each ten pieces of a level
+   now take a tenth off, down to a floor. */
 static long step_ns(void)
 {
-    return 250000000L - sp * 50000000L;
+    long base = 250000000L - sp * 50000000L;
+    long ns = base * 10 / (10 + piece / 10);
+    return ns < 40000000L ? 40000000L : ns;
 }
 
 static int pause_game(void)     /* 1 to leave the game */
