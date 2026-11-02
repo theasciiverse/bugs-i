@@ -4,7 +4,7 @@
 
 chtype c[3];                      /* Game piece array */
 
-void newstart()
+void newstart(void)
 {
     c[0] = 'A';                 /* Game pieces */
     c[1] = 'L';
@@ -24,7 +24,7 @@ void newstart()
     mvwaddch(w, 17, 9, 34);
 }
 
-void start()                    /*call this every new level */
+void start(void)                    /*call this every new level */
 {
     unsigned int i, x, y, z, ch;
     for (y = 1; y < 17; y++)    /*zap board and a[][] */
@@ -56,7 +56,7 @@ void start()                    /*call this every new level */
     nextpiece();                /*show next piece */
 }
 
-void nextpiece()
+void nextpiece(void)
 {
     static chtype na, nb;       /*remember every time */
     p1->c = c[na];              /*put old chars in play */

@@ -5,7 +5,7 @@ struct pos t[48];               /*terminate array - could have used
                                    linked lists, wouldn't be worth
                                    time spent in malloc each time */
 
-void meat()                     /*checks and removes */
+void meat(void)                     /*checks and removes */
 {
     int remove = 0, i;
     /*remove is flag that we've erased something */
@@ -41,7 +41,7 @@ void meat()                     /*checks and removes */
     }
 }
 
-int terminate()                 /*I'll be back! */
+int terminate(void)                 /*I'll be back! */
 {
     struct pos *tp = t;         /*tp points to t[0] */
     unsigned int i;

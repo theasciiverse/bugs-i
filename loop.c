@@ -12,7 +12,7 @@ struct pos npos[] = {
 
 void change(int);
 
-void loop()
+void loop(void)
 {
     piece = 0;                  /* haven't played yet */
     mvprintw(1, 0, "Score: %d", score); /*update stats */
@@ -56,7 +56,7 @@ void loop()
     }
 }
 
-void loop2()
+void loop2(void)
 {
     int i, dflg = 0;
     short tme = 0;              /*time counter */

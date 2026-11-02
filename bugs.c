@@ -15,7 +15,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-int main()
+int main(void)
 {
     signal(SIGQUIT, fatal_err); /*control-/ */
     signal(SIGINT, fatal_err);  /*control-c */

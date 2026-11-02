@@ -3,10 +3,10 @@
 
 int cols(int x);
 void down(int y, int x);
-void meat();
+void meat(void);
 int row(int y);
 void seta(int y, int x);
 void setac(int y, int x);
-int terminate();
+int terminate(void);
 
 #endif // __MEAT_H

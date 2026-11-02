@@ -6,11 +6,14 @@ PROG = bugs
 CC       ?= gcc
 CFLAGS   ?= -O3
 CFLAGS	 += -std=c99 -Wall -Wextra
-CFLAGS   += $(shell ncurses5-config --cflags)
+# ncurses through pkg-config when it is there, plain -lncurses otherwise
+CURSES_CFLAGS ?= $(shell pkg-config --cflags ncurses 2>/dev/null)
+CURSES_LIBS   ?= $(shell pkg-config --libs ncurses 2>/dev/null || echo -lncurses)
+CFLAGS   += $(CURSES_CFLAGS)
 CPPFLAGS += -DLINUX
-CPPFLAGS += -D_POSIX_C_SOURCE=199309L
-CPPFLAGS += -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED
-LIBS     += $(shell ncurses5-config --libs)
+# the same values ncurses' pkg-config file sets, so the two agree
+CPPFLAGS += -D_DEFAULT_SOURCE -D_XOPEN_SOURCE=600
+LIBS     += $(CURSES_LIBS)
 
 SRCS = $(wildcard *.c)
 OBJS = $(SRCS:.c=.o)
@@ -25,7 +28,7 @@ BIN_DIR   = $(PREFIX)/bin
 all: $(PROG)
 
 $(PROG): $(OBJS)
-	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS) $(LIBS)
 
 %.o: %.c $(DEPS)
 
